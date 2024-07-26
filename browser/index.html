@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Frost Fox Client</title>
+        <style>
+            body {
+                background-color: #121212;
+                color: #ffffff;
+                font-family: Arial, sans-serif;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                margin: 0;
+            }
+            .container {
+                text-align: center;
+                background-color: #1e1e1e;
+                padding: 20px;
+                border-radius: 10px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+                width: 300px;
+            }
+            .title {
+                color: #ffa500;
+                font-size: 2em;
+                margin: 0.5em 0;
+            }
+            .subtitle {
+                color: #00ffff;
+                font-size: 1.2em;
+                margin-bottom: 1em;
+            }
+            .inputbox {
+                margin: 1em 0;
+            }
+            .inputbox input {
+                width: 100%;
+                padding: 10px;
+                margin: 5px 0;
+                border: none;
+                border-radius: 5px;
+            }
+            .inputbox button {
+                width: 100%;
+                padding: 10px;
+                margin: 5px 0;
+                border: none;
+                border-radius: 5px;
+                background-color: #333333;
+                color: #ffffff;
+                cursor: pointer;
+            }
+            .inputbox button:hover {
+                background-color: #444444;
+            }
+            .messages {
+                text-align: left;
+                max-height: 200px;
+                overflow-y: auto;
+                background-color: #2a2a2a;
+                padding: 10px;
+                border-radius: 5px;
+                margin-top: 10px;
+            }
+            .message {
+                margin: 5px 0;
+                padding: 5px;
+                background-color: #3a3a3a;
+                border-radius: 3px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1 class="title">Frost Fox Client</h1>
+            <h4 class="subtitle">Client Connection Terminal</h4>
+            <div class="inputbox">
+                <input type="text" id="gotIDInput" placeholder="Package ID" style="width: 90%" /><br>
+                <input type="text" id="messageInput" placeholder="Package Body" style="width: 90%" /><br>
+                <button id="sendButton">Send</button>
+                <button id="quitButton">Quit</button>
+            </div>
+            <div id="message" class="messages"></div>
+        </div>
+        
+        <script>
+            function connectToSocket() {
+                console.log("Connecting to Service...");
+                const socket = new WebSocket(atob("<Base64 Encoded ws://serverAddress:plusPort>"));
+
+                socket.addEventListener('open', () => {
+                    console.log("Connected to Service!");
+                    socket.send(JSON.stringify({
+                        "id": 0,
+                        "type": "client_browser"
+                    }));
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'message';
+                    messageDiv.textContent = "Connected to Service";
+                    document.getElementById('message').appendChild(messageDiv);
+                });
+
+                socket.addEventListener('close', () => {
+                    console.log("Please refresh page to reconnect");
+                });
+
+                socket.addEventListener('message', (event) => {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'message';
+                    messageDiv.textContent = event.data;
+                    document.getElementById('message').appendChild(messageDiv);
+                });
+
+                document.getElementById('sendButton').addEventListener('click', () => {
+                    const messageInput = document.getElementById('messageInput');
+                    const message = messageInput.value;
+                    const got_id_input = document.getElementById('gotIDInput');
+                    const got_id = got_id_input.value;
+                    socket.send(JSON.stringify({
+                        "body": message,
+                        "id": got_id,
+                        "to": "cctweaked"
+                    }));
+                    messageInput.value = "";
+                    got_id_input.value = "";
+                });
+
+                document.getElementById('quitButton').addEventListener('click', () => {
+                    socket.send(JSON.stringify({
+                        "message": "Browser disconnected",
+                        "status": "success",
+                        "window": "browser",
+                        "type": "disconnect"
+                    }));
+                    socket.close();
+                    console.log("Disconnected from Service!");
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'message';
+                    messageDiv.textContent = "Disconnected from Service";
+                    document.getElementById('message').appendChild(messageDiv);
+                });
+            }
+
+            // Auto-connect on page load
+            connectToSocket();
+        </script>
+    </body>
+</html>

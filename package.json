@@ -1,4 +1,19 @@
 {
   "version": "0.0.1",
-  "branch": "ALPHA"
+  "branch": "ALPHA",
+
+  "mod-requirements": [
+    "Advanced Peripherals",
+    "CCTweaked"
+  ],
+
+  "node-requirements": [
+    "ws"
+  ],
+
+  "cctweaked-requirements": [
+    "ws",
+    "playerDetector",
+    "environmentDetector"
+  ]
 }
